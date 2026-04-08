@@ -1,62 +1,101 @@
 import streamlit as st
 import streamlit.components.v1 as components
-import pandas as pd
-from datetime import datetime
 
-# 1. CẤU HÌNH TRANG
+# ==========================================
+# 1. PHẦN CÀI ĐẶT CỦA GIÁO VIÊN (THAY TẠI ĐÂY)
+# ==========================================
+# Dán link Web App bạn vừa copy từ Google Apps Script vào đây
+WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbyKFr7YIkn5pM-lbkxaArABB7aRuAgIC4smJJh3Y8mcnEU-YG0yG8W2CFVIbAuRqY-b/exec"
+
+# Dán link Google Form bài tập của bạn vào đây (nên dùng link có đuôi /viewform)
+FORM_URL = "https://forms.gle/GUoUFW4vJAZ2gWTy9"
+# ==========================================
+
+# Cấu hình giao diện trang web
 st.set_page_config(page_title="Hệ thống BTVN Toán", layout="wide")
 
-# --- PHẦN CÀI ĐẶT CỦA GIÁO VIÊN ---
-FORM_URL = "https://forms.gle/81Q8tE3wn2koLVgc8"
-# --------------------------------
+# CSS để tối ưu hiển thị khung bài tập
+st.markdown("""
+    <style>
+    .main {
+        padding: 0rem 1rem;
+    }
+    .iframe-container {
+        position: relative;
+        width: 100%;
+        height: 850px;
+        border: 2px solid #f0f2f6;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
 st.title("📝 Hệ thống Làm Bài Tập Trực Tuyến")
+st.write("Vui lòng nhập tên và giữ tab này luôn mở trong suốt quá trình làm bài.")
 
-# Khởi tạo biến đếm trong phiên làm việc
-if 'log_data' not in st.session_state:
-    st.session_state.log_data = []
-
-name = st.text_input("Nhập họ và tên của em để bắt đầu:", placeholder="Ví dụ: Nguyễn Văn A")
+# Nhập tên học sinh
+name = st.text_input("Nhập họ và tên của em:", placeholder="Ví dụ: Nguyễn Văn A")
 
 if name:
-    # 2. THEO DÕI RỜI TAB QUA JAVASCRIPT
+    # 2. JAVASCRIPT: THEO DÕI RỜI TAB VÀ GỬI DỮ LIỆU SANG GOOGLE SHEETS
+    # Script này sẽ tự động chạy ngầm, học sinh không thể tắt
     components.html(
         f"""
         <script>
+        var count = 0;
         document.addEventListener("visibilitychange", function() {{
             if (document.hidden) {{
-                let time = new Date().toLocaleTimeString();
-                alert("Cảnh báo {name}: Em vừa rời tab lúc " + time);
-                // Gửi tín hiệu về Python (không cần Apps Script)
-                window.parent.postMessage({{type: 'tab_switch', time: time}}, '*');
+                count++;
+                // 1. Hiển thị cảnh báo ngay trên máy học sinh
+                alert("Cảnh báo {name}: Em đã rời tab " + count + " lần. Hành vi này đã được báo về giáo viên!");
+                
+                // 2. Gửi dữ liệu thầm lặng về Google Sheets
+                fetch('{WEBHOOK_URL}', {{
+                    method: 'POST',
+                    mode: 'no-cors',
+                    cache: 'no-cache',
+                    headers: {{
+                        'Content-Type': 'application/json'
+                    }},
+                    body: JSON.stringify({{
+                        name: '{name}',
+                        action: 'Rời tab',
+                        count: count
+                    }})
+                }});
             }}
         }});
+
+        // Chặn chuột phải để hạn chế dùng công cụ tìm kiếm bên ngoài
+        document.addEventListener('contextmenu', event => event.preventDefault());
         </script>
         """,
         height=0,
     )
 
-    st.info(f"Chào **{name}**, hãy tập trung làm bài trong khung dưới đây.")
+    st.success(f"Đã xác nhận học sinh: **{name}**. Em có thể bắt đầu làm bài bên dưới.")
 
-    # 3. HIỂN THỊ BÀI TẬP
+    # 3. HIỂN THỊ KHUNG BÀI TẬP (Có hỗ trợ cuộn mượt mà)
     st.markdown(
         f"""
-        <style>
-            .iframe-container {{ width: 100%; height: 800px; overflow: auto; border: 1px solid #ddd; }}
-            iframe {{ width: 100%; height: 100%; border: none; }}
-        </style>
         <div class="iframe-container">
-            <iframe src="{FORM_URL}"></iframe>
+            <iframe src="{FORM_URL}">Đang tải bài tập...</iframe>
         </div>
         """,
         unsafe_allow_html=True
     )
-
-    # 4. PHẦN DÀNH CHO GIÁO VIÊN KIỂM TRA TẠI CHỖ
-    # Vì Apps Script bị lỗi, bạn có thể xem nhanh danh sách vi phạm ngay dưới cuối trang
-    with st.expander("Dành cho Giáo viên: Xem lịch sử vi phạm của phiên này"):
-        st.write("Dữ liệu này sẽ mất khi bạn load lại trang (F5).")
-        st.table(st.session_state.log_data)
+    
+    st.info("💡 Sau khi làm xong hết các câu hỏi, hãy nhớ nhấn nút **'Gửi' (Submit)** trong khung bài tập phía trên.")
 
 else:
-    st.warning("⚠️ Vui lòng nhập tên để nhận đề bài.")
+    st.warning("⚠️ Hệ thống đang chờ em nhập tên để mở đề bài.")
+    # Hình ảnh hướng dẫn hoặc minh họa nếu muốn
+    st.markdown("---")
+    st.caption("Lưu ý: Mọi hành vi chuyển tab, mở tab mới đều sẽ bị hệ thống ghi lại tự động.")
