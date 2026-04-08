@@ -32,7 +32,7 @@ with header_right:
     if not st.session_state.has_started:
         st.write("") 
         # Sử dụng on_change hoặc kiểm tra nút bấm chặt chẽ hơn
-        name_input = st.text_input("Enter Full Name to Start:", placeholder="e.g. Lily")
+        name_input = st.text_input("Enter Full Name to Start:", placeholder="e.g. Michael Jackson")
         
         if st.button("🚀 START ASSIGNMENT", use_container_width=True):
             if name_input:
