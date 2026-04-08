@@ -5,62 +5,50 @@ import streamlit.components.v1 as components
 st.set_page_config(page_title="Hệ thống BTVN Toán", layout="wide")
 
 # --- PHẦN CÀI ĐẶT ---
-WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbyKFr7YIkn5pM-lbkxaArABB7aRuAgIC4smJJh3Y8mcnEU-YG0yG8W2CFVIbAuRqY-b/exec"
-FORM_URL = "https://forms.gle/zCyo1bFcdMQQq6Lz6"
+WEBHOOK_URL = "DÁN_LINK_WEB_APP_CỦA_BẠN_VÀO_ĐÂY"
+FORM_URL = "DÁN_LINK_BÀI_TẬP_VÀO_ĐÂY"
 # --------------------
 
 st.title("📝 Hệ thống Làm Bài Tập Trực Tuyến")
 
-# Khởi tạo trạng thái nộp bài trong session_state
+# Khởi tạo trạng thái
 if 'is_done' not in st.session_state:
     st.session_state.is_done = False
 
 name = st.text_input("Nhập họ và tên của em:", placeholder="Ví dụ: Nguyễn Văn A")
 
 if name:
-    # 2. JAVASCRIPT THÔNG MINH
-    # Tự động phát hiện khi Iframe thay đổi nội dung (nộp bài xong)
-    components.html(
-        f"""
-        <script>
-        var count = 0;
-        var isFinished = false;
-
-        // Lắng nghe sự kiện rời tab
-        document.addEventListener("visibilitychange", function() {{
-            if (!isFinished && document.hidden) {{
-                count++;
-                alert("Cảnh báo: Em vừa rời tab " + count + " lần!");
-                
-                fetch('{WEBHOOK_URL}', {{
-                    method: 'POST',
-                    mode: 'no-cors',
-                    body: JSON.stringify({{
-                        name: '{name}',
-                        action: 'Rời tab',
-                        count: count
-                    }})
-                }});
-            }}
-        }});
-
-        // Lắng nghe tin nhắn từ hệ thống để ngừng giám sát
-        window.addEventListener("message", function(event) {{
-            if (event.data === "STOP_MONITORING") {{
-                isFinished = true;
-                console.log("Đã dừng giám sát tự động.");
-            }}
-        }});
-        </script>
-        """,
-        height=0,
-    )
-
+    # CHỈ CHẠY GIÁM SÁT NẾU CHƯA NỘP BÀI
     if not st.session_state.is_done:
-        st.info(f"Học sinh: **{name}**. Hệ thống đang giám sát tự động.")
-        
-        # 3. HIỂN THỊ KHUNG BÀI TẬP
-        # Thêm nút bấm "Xong" thủ công đề phòng trường hợp tự động bị trình duyệt chặn
+        st.info(f"Học sinh: **{name}**. Hệ thống đang giám sát chuyển tab...")
+
+        # JavaScript giám sát: Chỉ được chèn vào khi is_done == False
+        components.html(
+            f"""
+            <script>
+            var count = 0;
+            document.addEventListener("visibilitychange", function() {{
+                if (document.hidden) {{
+                    count++;
+                    alert("Cảnh báo: Em vừa rời tab " + count + " lần!");
+                    
+                    fetch('{WEBHOOK_URL}', {{
+                        method: 'POST',
+                        mode: 'no-cors',
+                        body: JSON.stringify({{
+                            name: '{name}',
+                            action: 'Rời tab',
+                            count: count
+                        }})
+                    }});
+                }}
+            }});
+            </script>
+            """,
+            height=0,
+        )
+
+        # Hiển thị bài tập và nút nộp bài
         cols = st.columns([8, 2])
         with cols[0]:
             st.markdown(
@@ -73,12 +61,18 @@ if name:
             )
         with cols[1]:
             st.write("---")
-            if st.button("Nộp bài xong"):
+            st.write("Sau khi nhấn GỬI trong Form, hãy nhấn nút dưới đây:")
+            if st.button("XÁC NHẬN HOÀN THÀNH"):
                 st.session_state.is_done = True
-                st.rerun()
-
+                st.rerun() # Lệnh này sẽ xóa sạch script cũ và vẽ lại trang
+    
     else:
+        # TRẠNG THÁI ĐÃ NỘP BÀI: Không có bất kỳ dòng JavaScript giám sát nào ở đây
         st.balloons()
-        st.success("Hệ thống đã ngừng giám sát. Em có thể nghỉ ngơi!")
+        st.success(f"Hệ thống đã ngừng giám sát. Chúc mừng **{name}** đã hoàn thành!")
+        st.info("Bây giờ em có thể thoải mái chuyển tab hoặc đóng trình duyệt.")
+        if st.button("Làm bài lại (Nếu cần)"):
+            st.session_state.is_done = False
+            st.rerun()
 else:
-    st.warning("Vui lòng nhập tên.")
+    st.warning("Vui lòng nhập tên để bắt đầu.")
