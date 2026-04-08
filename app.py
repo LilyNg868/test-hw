@@ -6,8 +6,8 @@ import requests
 st.set_page_config(page_title="Math Online Assignment", layout="wide")
 
 # --- TEACHER SETTINGS ---
-WEBHOOK_URL = "YOUR_APPS_SCRIPT_URL_HERE"
-FORM_URL = "YOUR_GOOGLE_FORM_URL_HERE"
+WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbyKFr7YIkn5pM-lbkxaArABB7aRuAgIC4smJJh3Y8mcnEU-YG0yG8W2CFVIbAuRqY-b/exec"
+FORM_URL = "https://forms.gle/8Tv699JS13Y7M13o7"
 # ------------------------
 
 if 'is_monitored' not in st.session_state:
