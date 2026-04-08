@@ -15,6 +15,7 @@ FORMULA_SHEET_URL = "https://drive.google.com/file/d/1jH5to8-4f0YSthKfxbwHm4ScCk
 EXTRA_URL = "https://www.desmos.com/calculator"          # Ví dụ: "https://www.desmos.com/scientific"
 # ------------------------
 
+# Initialize session states
 if 'is_monitored' not in st.session_state:
     st.session_state.is_monitored = True
 if 'has_started' not in st.session_state:
@@ -27,41 +28,56 @@ with header_left:
     st.title("📝 Assignment Portal")
 
 with header_right:
-    # Nếu chưa bắt đầu: Hiện ô nhập tên
+    # TRƯỜNG HỢP 1: CHƯA BẮT ĐẦU
     if not st.session_state.has_started:
-        st.write(" ") # Tạo khoảng trống cho cân đối
-        name = st.text_input("Enter Full Name to Start:", placeholder="e.g. Lily")
+        st.write("") 
+        # Sử dụng on_change hoặc kiểm tra nút bấm chặt chẽ hơn
+        name_input = st.text_input("Enter Full Name to Start:", placeholder="e.g. Lily")
+        
         if st.button("🚀 START ASSIGNMENT", use_container_width=True):
-            if name:
-                st.session_state.student_name = name
+            if name_input:
+                # Ghi đè trực tiếp vào session_state
+                st.session_state.student_name = name_input
+                st.session_state.has_started = True
+                
+                # Gửi tín hiệu về Google Sheet
                 try:
-                    requests.post(WEBHOOK_URL, json={"name": name, "action": "START"})
-                    st.session_state.has_started = True
-                    st.rerun()
-                except: pass
+                    requests.post(WEBHOOK_URL, json={
+                        "name": name_input, 
+                        "action": "START"
+                    })
+                except:
+                    pass
+                
+                # Ép app chạy lại ngay lập tức để hiện nút FINISH
+                st.rerun()
             else:
-                st.error("Please enter your name!")
+                st.error("Please enter your name first!")
     
-    # Nếu đang làm bài: Hiện nút FINISH và trạng thái
+    # TRƯỜNG HỢP 2: ĐANG LÀM BÀI (Hiện nút Finish ngay)
     elif st.session_state.is_monitored:
-        st.write(" ")
+        st.write("")
         if st.button("🏁 CONFIRM FINISH & STOP MONITORING", type="primary", use_container_width=True):
             try:
-                requests.post(WEBHOOK_URL, json={"name": st.session_state.student_name, "action": "FINISH"})
-            except: pass
+                requests.post(WEBHOOK_URL, json={
+                    "name": st.session_state.student_name, 
+                    "action": "FINISH"
+                })
+            except:
+                pass
             st.session_state.is_monitored = False
             st.rerun()
         st.caption(f"Student: **{st.session_state.student_name}** | Status: 🔒 Monitoring Active")
 
-    # Nếu đã kết thúc:
+    # TRƯỜNG HỢP 3: ĐÃ KẾT THÚC
     else:
         st.success("✅ Session Completed. Monitoring Disabled.")
 
 st.divider()
 
-# 3. MONITORING & CONTENT
+# 3. MONITORING & CONTENT (Chỉ hiện khi has_started là True)
 if st.session_state.has_started:
-    # JavaScript Giám sát (Chỉ chạy khi has_started = True)
+    # JavaScript Giám sát
     status_js = "true" if st.session_state.is_monitored else "false"
     components.html(
         f"""
@@ -76,7 +92,7 @@ if st.session_state.has_started:
                 fetch('{WEBHOOK_URL}', {{
                     method: 'POST', mode: 'no-cors',
                     body: JSON.stringify({{ 
-                        name: '{st.session_state.get('student_name', '')}', 
+                        name: '{st.session_state.student_name}', 
                         action: 'LEAVE TAB ' + currentCount 
                     }})
                 }});
@@ -97,7 +113,6 @@ if st.session_state.has_started:
     with tabs[0]:
         st.markdown(f'<iframe src="{FORM_URL}" width="100%" height="900px" style="border:none;"></iframe>', unsafe_allow_html=True)
             
-    # Hiển thị các tab phụ nếu có
     idx = 1
     if FORMULA_SHEET_URL:
         with tabs[idx]:
