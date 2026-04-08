@@ -1,33 +1,34 @@
 import streamlit as st
 import streamlit.components.v1 as components
-from datetime import datetime
 import pandas as pd
+from datetime import datetime
 
-# Cấu hình trang
-st.set_page_config(page_title="Hệ thống giám sát BTVN", layout="wide")
+# 1. CẤU HÌNH TRANG
+st.set_page_config(page_title="Hệ thống BTVN Toán", layout="wide")
 
-# Đường link Google Sheet của bạn (Thay link bên dưới bằng link bạn vừa copy)
-SHEET_URL = "https://docs.google.com/spreadsheets/d/your-id-here/edit#gid=0"
+# --- PHẦN CÀI ĐẶT CỦA GIÁO VIÊN ---
+FORM_URL = "https://forms.gle/81Q8tE3wn2koLVgc8"
+# --------------------------------
 
-st.title("📝 Hệ thống Làm Bài Tập Toán")
+st.title("📝 Hệ thống Làm Bài Tập Trực Tuyến")
 
-name = st.text_input("Nhập họ và tên để bắt đầu làm bài:")
+# Khởi tạo biến đếm trong phiên làm việc
+if 'log_data' not in st.session_state:
+    st.session_state.log_data = []
+
+name = st.text_input("Nhập họ và tên của em để bắt đầu:", placeholder="Ví dụ: Nguyễn Văn A")
 
 if name:
-    # 1. Ghi nhận thời gian bắt đầu vào hệ thống
-    if 'initialized' not in st.session_state:
-        st.session_state['initialized'] = True
-        # Gợi ý: Bạn có thể viết thêm code lưu tên HS vào Sheet tại đây để điểm danh
-
-    # 2. Javascript để bắt lỗi rời tab
-    # Khi học sinh rời tab, nó sẽ tự động bấm một nút ẩn trên web để Python biết
+    # 2. THEO DÕI RỜI TAB QUA JAVASCRIPT
     components.html(
         f"""
         <script>
         document.addEventListener("visibilitychange", function() {{
             if (document.hidden) {{
-                window.parent.postMessage({{type: 'tab-switch', user: '{name}'}}, '*');
-                alert("Cảnh báo: Hệ thống đã ghi nhận em rời tab!");
+                let time = new Date().toLocaleTimeString();
+                alert("Cảnh báo {name}: Em vừa rời tab lúc " + time);
+                // Gửi tín hiệu về Python (không cần Apps Script)
+                window.parent.postMessage({{type: 'tab_switch', time: time}}, '*');
             }}
         }});
         </script>
@@ -35,39 +36,27 @@ if name:
         height=0,
     )
 
-    # 3. Hiển thị Form bài tập
-    form_url = "https://forms.gle/44oJdC1EXZxWr5666" 
-    st.components.v1.iframe(form_url, height=800)
-    # Sử dụng HTML/CSS để đảm bảo khung hình có thanh cuộn và chiều cao cố định
+    st.info(f"Chào **{name}**, hãy tập trung làm bài trong khung dưới đây.")
+
+    # 3. HIỂN THỊ BÀI TẬP
     st.markdown(
         f"""
         <style>
-        .iframe-container {{
-            position: relative;
-            width: 100%;
-            height: 800px;
-            overflow: auto;
-            -webkit-overflow-scrolling: touch;
-        }}
-        .iframe-container iframe {{
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border: none;
-        }}
+            .iframe-container {{ width: 100%; height: 800px; overflow: auto; border: 1px solid #ddd; }}
+            iframe {{ width: 100%; height: 100%; border: none; }}
         </style>
         <div class="iframe-container">
-            <iframe src="{form_url}"></iframe>
+            <iframe src="{FORM_URL}"></iframe>
         </div>
         """,
         unsafe_allow_html=True
     )
 
-    # 4. Khu vực dành cho giáo viên (Có thể đặt mật khẩu để ẩn đi)
-    if st.checkbox("Xem nhật ký vi phạm (Dành cho GV)"):
-        pwd = st.text_input("Mật khẩu quản lý:", type="password")
-        if pwd == "123456": # Thay mật khẩu của bạn
-            st.write("Dữ liệu vi phạm sẽ được hiển thị ở file Google Sheets của bạn.")
-            st.video("https://docs.google.com/spreadsheets/d/1XnNi66BFOR13U-sXZPdAfbF7shDtTOvypHaIXZVcPPU/edit?usp=sharing") # Link minh họa
+    # 4. PHẦN DÀNH CHO GIÁO VIÊN KIỂM TRA TẠI CHỖ
+    # Vì Apps Script bị lỗi, bạn có thể xem nhanh danh sách vi phạm ngay dưới cuối trang
+    with st.expander("Dành cho Giáo viên: Xem lịch sử vi phạm của phiên này"):
+        st.write("Dữ liệu này sẽ mất khi bạn load lại trang (F5).")
+        st.table(st.session_state.log_data)
+
+else:
+    st.warning("⚠️ Vui lòng nhập tên để nhận đề bài.")
