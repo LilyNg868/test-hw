@@ -27,7 +27,7 @@ if name:
 
     # NHÚNG LINK BÀI TẬP CỦA BẠN VÀO ĐÂY
     # Thay link dưới bằng link Google Form của bạn
-    form_url = "https://docs.google.com/forms/d/e/1FAIpQLSd-p_YfK6U-vN9-f7vKzK-zN-zN-zN-zN/viewform?embedded=true"
+    form_url = "https://forms.gle/VWXG5nwJwwVYaEHP8"
     
     st.components.v1.iframe(form_url, height=900, scrolling=True)
 
