@@ -11,7 +11,7 @@ WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbyKFr7YIkn5pM-lbkxaArABB7
 FORM_URL = "https://forms.gle/9nMAH9yD3kFCUhaK8"
 
 # NẾU KHÔNG DÙNG, HÃY ĐỂ LÀ None HOẶC ""
-FORMULA_SHEET_URL = "https://drive.google.com/file/d/1jH5to8-4f0YSthKfxbwHm4ScCkhJ1SwO/view?usp=sharing"  # Ví dụ: "https://link-anh-cua-ban.jpg"
+FORMULA_SHEET_URL = "https://drive.google.com/file/d/1jH5to8-4f0YSthKfxbwHm4ScCkhJ1SwO/preview"  # Ví dụ: "https://link-anh-cua-ban.jpg"
 EXTRA_URL = "https://www.desmos.com/calculator"          # Ví dụ: "https://www.desmos.com/scientific"
 # ------------------------
 
