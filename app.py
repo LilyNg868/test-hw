@@ -80,6 +80,13 @@ if name:
             
             if st.button("XÁC NHẬN KẾT THÚC"):
                 if pwd_input == st.session_state.final_pwd:
+                    # Gửi tín hiệu về Google Sheet báo rằng học sinh đã thoát chính quy
+                    import requests
+                    requests.post(WEBHOOK_URL, json={
+                    "name": name,
+                    "action": "ĐÃ NHẬP MÃ THOÁT",
+                    "count": "Hoàn thành"
+                    })
                     st.session_state.is_monitored = False # Tắt giám sát ở phía Python
                     st.session_state.step = 3
                     st.rerun() # Load lại trang để cập nhật biến monitorActive sang JS
