@@ -68,6 +68,7 @@ if name:
         
         if st.session_state.step == 1:
             st.error("🔒 ĐANG GIÁM SÁT")
+            st.write("Sau khi nhấn **GỬI** bài trong khung bên cạnh, hãy nhấn nút dưới đây:")
             if st.button("TÔI ĐÃ NỘP BÀI XONG"):
                 st.session_state.step = 2
                 st.rerun()
