@@ -5,8 +5,8 @@ import streamlit.components.v1 as components
 st.set_page_config(page_title="Hệ thống BTVN Toán", layout="wide")
 
 # --- PHẦN CÀI ĐẶT ---
-WEBHOOK_URL = "DÁN_LINK_WEB_APP_CỦA_BẠN_VÀO_ĐÂY"
-FORM_URL = "DÁN_LINK_BÀI_TẬP_VÀO_ĐÂY"
+WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbyKFr7YIkn5pM-lbkxaArABB7aRuAgIC4smJJh3Y8mcnEU-YG0yG8W2CFVIbAuRqY-b/exec"
+FORM_URL = "https://forms.gle/8Tv699JS13Y7M13o7"
 # --------------------
 
 st.title("📝 Hệ thống Làm Bài Tập Trực Tuyến")
