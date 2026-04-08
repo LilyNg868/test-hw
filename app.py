@@ -3,7 +3,7 @@ import streamlit.components.v1 as components
 import requests
 
 # 1. PAGE CONFIGURATION
-st.set_config(page_title="Math Online Assignment", layout="wide")
+st.set_page_config(page_title="Math Online Assignment", layout="wide")
 
 
 # --- TEACHER SETTINGS ---
