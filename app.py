@@ -38,10 +38,36 @@ if name:
     # 3. Hiển thị Form bài tập
     form_url = "https://forms.gle/44oJdC1EXZxWr5666" 
     st.components.v1.iframe(form_url, height=800)
+    # Sử dụng HTML/CSS để đảm bảo khung hình có thanh cuộn và chiều cao cố định
+    st.markdown(
+        f"""
+        <style>
+        .iframe-container {{
+            position: relative;
+            width: 100%;
+            height: 800px;
+            overflow: auto;
+            -webkit-overflow-scrolling: touch;
+        }}
+        .iframe-container iframe {{
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }}
+        </style>
+        <div class="iframe-container">
+            <iframe src="{form_url}"></iframe>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
     # 4. Khu vực dành cho giáo viên (Có thể đặt mật khẩu để ẩn đi)
     if st.checkbox("Xem nhật ký vi phạm (Dành cho GV)"):
         pwd = st.text_input("Mật khẩu quản lý:", type="password")
         if pwd == "123456": # Thay mật khẩu của bạn
             st.write("Dữ liệu vi phạm sẽ được hiển thị ở file Google Sheets của bạn.")
-            st.video("https://ghi-log-vao-google-sheet-huong-dan.com") # Link minh họa
+            st.video("https://docs.google.com/spreadsheets/d/1XnNi66BFOR13U-sXZPdAfbF7shDtTOvypHaIXZVcPPU/edit?usp=sharing") # Link minh họa
